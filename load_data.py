@@ -94,3 +94,17 @@ def loadDataset2():
         'target': target
     }
     return data2
+
+###
+#  Creates an output directory and subdirectories. 
+#  source: https://stackoverflow.com/questions/14115254/creating-a-folder-with-timestamp/14115286
+###
+def createDateFolder(suffix=("")):
+    mydir = os.path.join(os.getcwd(), 'output', *suffix)
+    # print('mydir %s' %mydir)
+    try:
+        os.makedirs(mydir)
+    except OSError as e:
+        if e.errno != errno.EEXIST:
+            raise  # This was not a "directory exist" error..
+    return mydir

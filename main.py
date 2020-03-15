@@ -24,25 +24,13 @@ from sklearn.cluster import KMeans
 # Assignment
 import load_data
 
-###
-#  Creates an output directory and subdirectories. 
-#  source: https://stackoverflow.com/questions/14115254/creating-a-folder-with-timestamp/14115286
-###
-def createDateFolder(suffix=("")):
-    mydir = os.path.join(os.getcwd(), 'output', *suffix)
-    # print('mydir %s' %mydir)
-    try:
-        os.makedirs(mydir)
-    except OSError as e:
-        if e.errno != errno.EEXIST:
-            raise  # This was not a "directory exist" error..
-    return mydir
+# Create output folder
+# load_data.createDateFolder()
 
 # Load Dataset
 ds1 = load_data.loadDataset1()
 ds2 = load_data.loadDataset2()
 
-print('DS1', ds1, 'DS2', ds2)
 
 # Part 1
 # Part 2
