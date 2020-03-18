@@ -77,7 +77,7 @@ def loadDataset1():
         'data': data,
         'target': target
     }
-    log.debug(data1)
+    # log.debug(data1)
     return data1
 
 

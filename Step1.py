@@ -25,12 +25,9 @@ class Step1():
         self.name = name
     
     def run(self):
-        # self.elbow()
-        # inpt = input("Select your K value: ")
-        # self.k_means(int(inpt))
-
+        self.elbow()
+        # self.silhouette_side_by_side()
         # self.silhouette()
-        self.silhouette_side_by_side()
         # self.visualize()
 
     def k_means(self, k=5):
@@ -43,13 +40,10 @@ class Step1():
         range_n_clusters = [2, 3, 4, 5, 6]
 
         for n_clusters in range_n_clusters:
-            # Create a subplot with 1 row and 2 columns
             fig, (ax1, ax2) = plt.subplots(1, 2)
             fig.set_size_inches(18, 7)
 
             # The 1st subplot is the silhouette plot
-            # The silhouette coefficient can range from -1, 1 but in this example all
-            # lie within [-0.1, 1]
             self._generate_silhouette(ax1, n_clusters)
 
             # 2nd Plot showing the actual clusters formed
@@ -80,8 +74,6 @@ class Step1():
     # Analysis for selecting best number of clusters. 
     # Source: https://scikit-learn.org/stable/auto_examples/cluster/plot_kmeans_silhouette_analysis.html#sphx-glr-auto-examples-cluster-plot-kmeans-silhouette-analysis-py
     def silhouette_side_by_side(self):
-        # range_n_clusters = [2, 3, 4, 5, 6]
-        # range_n_clusters = [2,4,6,8]
         range_n_clusters = [2,6]
 
         for n_clusters in range_n_clusters:
@@ -106,7 +98,6 @@ class Step1():
         clusterer = KMeans(n_clusters=n_clusters, random_state=10)
 
         data_df = pd.DataFrame(self.dataX)
-        data_df['y'] = self.dataY
         cluster_labels = clusterer.fit_predict(data_df)
 
         silhouette_avg = silhouette_score(data_df, cluster_labels)
@@ -183,11 +174,12 @@ class Step1():
         Error =[]
         for i in range(1, 11):
             km = KMeans(n_clusters = i).fit(self.dataX)
-            # km.fit(self.dataX)
             Error.append(km.inertia_)
         import matplotlib.pyplot as plt
         plt.plot(range(1, 11), Error)
-        plt.title('Elbow method')
+        plt.title('Elbow Method Analysis for KMeans on %s' %self.name)
         plt.xlabel('No of clusters')
         plt.ylabel('Error')
+        plt.grid(True)
         plt.show()
+        # plt.save_fig('silhouette.png')
