@@ -19,16 +19,18 @@ from mpl_toolkits.mplot3d import Axes3D
 import seaborn as sns
 
 class Step1():
-    def __init__(self, data):
+    def __init__(self, data, name=""):
         self.data = data
         self.dataX, self.dataY = data['data'], data['target']
+        self.name = name
     
     def run(self):
         # self.elbow()
         # inpt = input("Select your K value: ")
         # self.k_means(int(inpt))
 
-        self.silhouette()
+        # self.silhouette()
+        self.silhouette_side_by_side()
         # self.visualize()
 
     def k_means(self, k=5):
@@ -48,59 +50,7 @@ class Step1():
             # The 1st subplot is the silhouette plot
             # The silhouette coefficient can range from -1, 1 but in this example all
             # lie within [-0.1, 1]
-            ax1.set_xlim([-0.1, 1])
-            # The (n_clusters+1)*10 is for inserting blank space between silhouette
-            # plots of individual clusters, to demarcate them clearly.
-            ax1.set_ylim([0, len(self.dataX) + (n_clusters + 1) * 10])
-
-            # Initialize the clusterer with n_clusters value and a random generator
-            # seed of 10 for reproducibility.
-            clusterer = KMeans(n_clusters=n_clusters, random_state=10)
-            cluster_labels = clusterer.fit_predict(self.dataX)
-
-            # The silhouette_score gives the average value for all the samples.
-            # This gives a perspective into the density and separation of the formed
-            # clusters
-            silhouette_avg = silhouette_score(self.dataX, cluster_labels)
-            print("For n_clusters =", n_clusters,
-                "The average silhouette_score is :", silhouette_avg)
-
-            # Compute the silhouette scores for each sample
-            sample_silhouette_values = silhouette_samples(self.dataX, cluster_labels)
-
-            y_lower = 10
-            for i in range(n_clusters):
-                # Aggregate the silhouette scores for samples belonging to
-                # cluster i, and sort them
-                ith_cluster_silhouette_values = \
-                    sample_silhouette_values[cluster_labels == i]
-
-                ith_cluster_silhouette_values.sort()
-
-                size_cluster_i = ith_cluster_silhouette_values.shape[0]
-                y_upper = y_lower + size_cluster_i
-
-                color = cm.nipy_spectral(float(i) / n_clusters)
-                ax1.fill_betweenx(np.arange(y_lower, y_upper),
-                                0, ith_cluster_silhouette_values,
-                                facecolor=color, edgecolor=color, alpha=0.7)
-
-                # Label the silhouette plots with their cluster numbers at the middle
-                ax1.text(-0.05, y_lower + 0.5 * size_cluster_i, str(i))
-
-                # Compute the new y_lower for next plot
-                y_lower = y_upper + 10  # 10 for the 0 samples
-
-            ax1.set_title("The silhouette plot for the various clusters.")
-            ax1.set_xlabel("The silhouette coefficient values")
-            ax1.set_ylabel("Cluster label")
-
-            # The vertical line for average silhouette score of all the values
-            ax1.axvline(x=silhouette_avg, color="red", linestyle="--")
-
-            ax1.set_yticks([])  # Clear the yaxis labels / ticks
-            # ax1.set_xticks([-0.1, 0, 0.2, 0.4, 0.6, 0.8, 1])
-            ax1.set_xticks([])
+            self._generate_silhouette(ax1, n_clusters)
 
             # 2nd Plot showing the actual clusters formed
             colors = cm.nipy_spectral(cluster_labels.astype(float) / n_clusters)
@@ -117,15 +67,83 @@ class Step1():
                 ax2.scatter(c[0], c[1], marker='$%d$' % i, alpha=1,
                             s=50, edgecolor='k')
 
-            ax2.set_title("The visualization of the clustered data.")
-            ax2.set_xlabel("Feature space for the 1st feature")
-            ax2.set_ylabel("Feature space for the 2nd feature")
+            ax2.set_title("Visualization of the clustered data.")
+            ax2.set_xlabel("Feature space for 1st feature")
+            ax2.set_ylabel("Feature space for 2nd feature")
 
-            plt.suptitle(("Silhouette analysis for KMeans clustering on sample data "
-                        "with n_clusters = %d" % n_clusters),
+            plt.suptitle(("Silhouette analysis for KMeans on %s "
+                        "with n_clusters = %d" % (self.name, n_clusters)),
                         fontsize=14, fontweight='bold')
 
         plt.show()
+
+    # Analysis for selecting best number of clusters. 
+    # Source: https://scikit-learn.org/stable/auto_examples/cluster/plot_kmeans_silhouette_analysis.html#sphx-glr-auto-examples-cluster-plot-kmeans-silhouette-analysis-py
+    def silhouette_side_by_side(self):
+        # range_n_clusters = [2, 3, 4, 5, 6]
+        # range_n_clusters = [2,4,6,8]
+        range_n_clusters = [2,6]
+
+        for n_clusters in range_n_clusters:
+            fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2)
+            fig.set_size_inches(8, 8)
+
+            self._generate_silhouette(ax1, n_clusters)
+            self._generate_silhouette(ax2, n_clusters+1)
+            self._generate_silhouette(ax3, n_clusters+2)
+            self._generate_silhouette(ax4, n_clusters+3)
+
+            plt.suptitle(("Silhouette Analysis for KMeans on %s "% (self.name)), fontweight='bold', fontsize=14)
+            fig.subplots_adjust(wspace=0.5, hspace=0.5, left=0.125, right=0.9,top=0.9, bottom=0.1)
+            # plt.save_fig('silhouette.png')
+        fig.tight_layout(rect=[0, 0.03, 1, 0.95])
+        plt.show()
+
+    def _generate_silhouette(self, ax1, n_clusters):
+        ax1.set_xlim([-0.1, 1])
+        ax1.set_ylim([0, len(self.dataX) + (n_clusters + 1) * 10])
+
+        clusterer = KMeans(n_clusters=n_clusters, random_state=10)
+
+        data_df = pd.DataFrame(self.dataX)
+        data_df['y'] = self.dataY
+        cluster_labels = clusterer.fit_predict(data_df)
+
+        silhouette_avg = silhouette_score(data_df, cluster_labels)
+        print("For n_clusters =", n_clusters,
+            "The average silhouette_score is :", silhouette_avg)
+
+        sample_silhouette_values = silhouette_samples(data_df, cluster_labels)
+
+        y_lower = 10
+        for i in range(n_clusters):
+            ith_cluster_silhouette_values = \
+                sample_silhouette_values[cluster_labels == i]
+
+            ith_cluster_silhouette_values.sort()
+
+            size_cluster_i = ith_cluster_silhouette_values.shape[0]
+            y_upper = y_lower + size_cluster_i
+
+            color = cm.nipy_spectral(float(i) / n_clusters)
+            ax1.fill_betweenx(np.arange(y_lower, y_upper),
+                            0, ith_cluster_silhouette_values,
+                            facecolor=color, edgecolor=color, alpha=0.7)
+
+            ax1.text(-0.05, y_lower + 0.5 * size_cluster_i, str(i))
+
+            y_lower = y_upper + 10  # 10 for the 0 samples
+
+        ax1.set_title("Silhouette plot for %i clusters." %n_clusters)
+        ax1.set_xlabel("Silhouette Coefficient")
+        ax1.set_ylabel("Cluster label")
+
+        # The vertical line for average silhouette score of all the values
+        ax1.axvline(x=silhouette_avg, color="red", linestyle="--")
+
+        ax1.set_yticks([])  # Clear the yaxis labels / ticks
+        ax1.set_xticks([-0.1, 0, 0.2, 0.4, 0.6, 0.8, 1])
+
 
     # TODO: Hardcoded for DS2
     def visualize(self):
@@ -145,16 +163,6 @@ class Step1():
         pprint(data_df)
 
         print('Explained variation per principal component: {}'.format(pca.explained_variance_ratio_))
-        # plt.figure(figsize=(16,10))
-        # sns.scatterplot(
-        #     x="pca-one", y="pca-two",
-        #     hue="y",
-        #     palette=sns.color_palette("hls", 4),
-        #     data=data_df,
-        #     legend="full",
-        #     alpha=0.3
-        # )
-        # plt.show()
 
         ax = plt.figure(figsize=(16,10)).gca(projection='3d')
         ax.scatter(

@@ -60,7 +60,7 @@ def loadDataset1():
         if "__" in col and col.split("__")[0] in categories]
     processed_columns = list(df_processed.columns[:])
 
-    print(processed_columns)
+    # print(processed_columns)
     # target = np.array(df_processed['price'])
     # data = np.array(df_processed.drop('price', axis=1))
     target = np.array(df_processed['price_bins'])
