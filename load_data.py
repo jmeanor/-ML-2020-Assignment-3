@@ -16,6 +16,7 @@ logger = logging.getLogger()
 logger.info('Initializing main.py')
 log = logging.getLogger()
 
+from pprint import pprint
 
 def setLog(path, oldHandler = None):
     if oldHandler != None:
@@ -31,7 +32,7 @@ def setLog(path, oldHandler = None):
 # ==========================================
 #   Load Data Set 1
 # ==========================================
-def loadDataset1():
+def loadDataset1(output_path="output"):
     df = pd.read_csv('./input/singapore-listings.csv', delimiter=',', header=0)
     
     # Pre-Processing - Removing attributes with no value
@@ -63,36 +64,47 @@ def loadDataset1():
     # print(processed_columns)
     # target = np.array(df_processed['price'])
     # data = np.array(df_processed.drop('price', axis=1))
+
     target = np.array(df_processed['price_bins'])
-    data = np.array(df_processed.drop('price_bins', axis=1))
-    
+    data_df = df_processed.drop(['price_bins', 'price'], axis=1)
+    data = np.array(data_df)
+
+    log.info('AirBNB Dataset:')
+    log.info(list(data_df))
+    log.info('Target:')
+    log.info(list(df_processed['price_bins']))
+
     # 2nd Iteration with imputing missing values
     from sklearn.impute import SimpleImputer
     imputer = SimpleImputer(missing_values = np.nan, strategy = 'constant', fill_value=0)
     imputer = imputer.fit(data)
     data = imputer.transform(data)
     # =====================================
+    df = pd.DataFrame(data, columns=list(data_df))
     
     data1 = {
-        'data': data,
+        'data': df,
         'target': target
     }
-    # log.debug(data1)
+    df.to_csv(os.path.join(output_path, "AirBNB-Dataset-initial.csv"))
     return data1
 
 
 # ==========================================
 #   Load Data Set 2
 # ==========================================
-def loadDataset2():
+def loadDataset2(output_path="output"):
     df = pd.read_csv('./input/hirosaki_temp_cherry.csv', delimiter=',', header=0)
 
     target = np.array(df['flower_status'])
-    data = np.array(df.drop('flower_status', axis=1))
+    data_df = df.drop('flower_status', axis=1)
+    data = np.array(data_df)
     data2 = {
-        'data': data,
+        'data': data_df,
         'target': target
     }
+    data_df.to_csv(os.path.join(output_path, "Cherry-Blossom-DS-initial.csv"))
+
     return data2
 
 ###

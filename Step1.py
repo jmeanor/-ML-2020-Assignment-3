@@ -1,11 +1,11 @@
-import matplotlib.pyplot as plt
 from sklearn.cluster import KMeans
+from sklearn.mixture import GaussianMixture
 from pprint import pprint
 
 import time
 import numpy as np
 import pandas as pd
-from sklearn.datasets import fetch_mldata
+# from sklearn.datasets import fetch_mldata
 from sklearn.metrics import silhouette_samples, silhouette_score
 
 import matplotlib.pyplot as plt
@@ -14,29 +14,32 @@ import matplotlib.cm as cm
 from sklearn.decomposition import PCA
 from sklearn.manifold import TSNE
 # %matplotlib inline
-import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 import seaborn as sns
 
 class Step1():
-    def __init__(self, data, name=""):
+    def __init__(self, data, name="", output="output"):
         self.data = data
         self.dataX, self.dataY = data['data'], data['target']
         self.name = name
     
     def run(self):
-        self.elbow()
-        # self.silhouette_side_by_side()
-        # self.silhouette()
+        # self.elbow(isKM=True)
+        # self.silhouette_side_by_side(isKM=True)
+        # self.silhouette(isKM=True)
         # self.visualize()
 
+        # E.M.
+        self.elbow(isKM=False)
+        # self.silhouette_side_by_side(isKM=False)
+
     def k_means(self, k=5):
-        km = KMeans(n_clusters=k)
+        km = KMeans(n_clusters=k, n_jobs=-1)
         clusters = km.fit_predict(self.dataX)
 
     # Analysis for selecting best number of clusters. 
     # Source: https://scikit-learn.org/stable/auto_examples/cluster/plot_kmeans_silhouette_analysis.html#sphx-glr-auto-examples-cluster-plot-kmeans-silhouette-analysis-py
-    def silhouette(self):
+    def silhouette(self, isKM=True):
         range_n_clusters = [2, 3, 4, 5, 6]
 
         for n_clusters in range_n_clusters:
@@ -65,37 +68,42 @@ class Step1():
             ax2.set_xlabel("Feature space for 1st feature")
             ax2.set_ylabel("Feature space for 2nd feature")
 
-            plt.suptitle(("Silhouette analysis for KMeans on %s "
-                        "with n_clusters = %d" % (self.name, n_clusters)),
+            clustererType = 'K-Means' if isKM else 'E.M.'
+            plt.suptitle(("Silhouette analysis for %s on %s "
+                        "with n_clusters = %d" % (clustererType, self.name, n_clusters)),
                         fontsize=14, fontweight='bold')
 
         plt.show()
 
     # Analysis for selecting best number of clusters. 
     # Source: https://scikit-learn.org/stable/auto_examples/cluster/plot_kmeans_silhouette_analysis.html#sphx-glr-auto-examples-cluster-plot-kmeans-silhouette-analysis-py
-    def silhouette_side_by_side(self):
+    def silhouette_side_by_side(self, isKM):
         range_n_clusters = [2,6]
 
         for n_clusters in range_n_clusters:
             fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2)
             fig.set_size_inches(8, 8)
 
-            self._generate_silhouette(ax1, n_clusters)
-            self._generate_silhouette(ax2, n_clusters+1)
-            self._generate_silhouette(ax3, n_clusters+2)
-            self._generate_silhouette(ax4, n_clusters+3)
-
-            plt.suptitle(("Silhouette Analysis for KMeans on %s "% (self.name)), fontweight='bold', fontsize=14)
+            self._generate_silhouette(ax1, n_clusters,   isKM)
+            self._generate_silhouette(ax2, n_clusters+1, isKM)
+            self._generate_silhouette(ax3, n_clusters+2, isKM)
+            self._generate_silhouette(ax4, n_clusters+3, isKM)
+            
+            clustererType = 'K-Means' if isKM else 'E.M.'
+            plt.suptitle(("Silhouette Analysis for %s on %s "% (clustererType, self.name)), fontweight='bold', fontsize=14)
             fig.subplots_adjust(wspace=0.5, hspace=0.5, left=0.125, right=0.9,top=0.9, bottom=0.1)
-            # plt.save_fig('silhouette.png')
+            plt.savefig('output/silhouette.png')
         fig.tight_layout(rect=[0, 0.03, 1, 0.95])
         plt.show()
 
-    def _generate_silhouette(self, ax1, n_clusters):
+    def _generate_silhouette(self, ax1, n_clusters, isKM=True):
         ax1.set_xlim([-0.1, 1])
         ax1.set_ylim([0, len(self.dataX) + (n_clusters + 1) * 10])
-
-        clusterer = KMeans(n_clusters=n_clusters, random_state=10)
+        
+        if isKM:
+            clusterer = KMeans(n_clusters=n_clusters, random_state=10)
+        else:
+            clusterer = GaussianMixture(n_components=n_clusters, init_params='random')
 
         data_df = pd.DataFrame(self.dataX)
         cluster_labels = clusterer.fit_predict(data_df)
@@ -145,9 +153,6 @@ class Step1():
         data_df = pd.DataFrame(self.dataX, columns=feat_columns)
         data_df['y'] = self.dataY
 
-        # df = pd.DataFrame({'pca-one': pca_result[:, 0], 
-        #     'pca-two': pca_result[:, 1], 
-        #     'pca-three': pca_result[:, 2] }, columns=['pca-one', 'pca-two', 'pca-three'])
         data_df['pca-one']   = pca_result[:, 0]
         data_df['pca-two']   = pca_result[:, 1]
         data_df['pca-three'] = pca_result[:, 2]
@@ -155,7 +160,7 @@ class Step1():
 
         print('Explained variation per principal component: {}'.format(pca.explained_variance_ratio_))
 
-        ax = plt.figure(figsize=(16,10)).gca(projection='3d')
+        ax = plt.figure(figsize=(8,5)).gca(projection='3d')
         ax.scatter(
             xs=data_df.loc[:,"pca-one"], 
             ys=data_df.loc[:,"pca-two"], 
@@ -170,16 +175,21 @@ class Step1():
 
     # Used to find optimal K
     # Source: https://heartbeat.fritz.ai/k-means-clustering-using-sklearn-and-python-4a054d67b187
-    def elbow(self):
+    def elbow(self, isKM=True):
         Error =[]
         for i in range(1, 11):
-            km = KMeans(n_clusters = i).fit(self.dataX)
-            Error.append(km.inertia_)
+            if isKM:
+                km = KMeans(n_clusters = i, n_jobs=-1).fit(self.dataX)
+                Error.append(km.inertia_)
+            else:
+                em = GaussianMixture(n_components=i, init_params='random').fit(self.dataX)
+                Error.append((em.bic(self.dataX), em.aic(self.dataX)))
         import matplotlib.pyplot as plt
         plt.plot(range(1, 11), Error)
-        plt.title('Elbow Method Analysis for KMeans on %s' %self.name)
+        clustererType = 'K-Means' if isKM else 'E.M.'
+        plt.title('Elbow Method Analysis for %s on %s' %(clustererType, self.name))
         plt.xlabel('No of clusters')
         plt.ylabel('Error')
         plt.grid(True)
+        plt.savefig('output/elbow.png')
         plt.show()
-        # plt.save_fig('silhouette.png')
