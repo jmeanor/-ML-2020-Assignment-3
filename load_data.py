@@ -4,6 +4,7 @@
 # Main
 import numpy as np
 from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import MinMaxScaler
 # from sklearn.datasets import load_iris, load_wine, load_breast_cancer, load_files
 import pandas as pd
 import errno
@@ -120,3 +121,8 @@ def createDateFolder(suffix=("")):
         if e.errno != errno.EEXIST:
             raise  # This was not a "directory exist" error..
     return mydir
+
+def normalize_features(data):
+    scaler = MinMaxScaler()
+    data['data'][data['data'].columns] = scaler.fit_transform(data['data'][data['data'].columns])
+    return data

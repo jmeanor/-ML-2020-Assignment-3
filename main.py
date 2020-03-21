@@ -33,21 +33,28 @@ load_data.setLog(output_dir)
 ds1 = load_data.loadDataset1()
 ds2 = load_data.loadDataset2()
 
+# Scale the data sets
+ds1 = load_data.normalize_features(ds1)
+ds2 = load_data.normalize_features(ds2)
+
+pprint(ds1)
+pprint(ds2)
+
 # Analysis
-an.heatmap(ds1, output_dir, 'AirBNB-DS', 'Blues')
-an.heatmap(ds2, output_dir, 'CherryBl-DS', 'Reds')
+# an.heatmap(ds1, output_dir, 'AirBNB-DS', 'Blues')
+# an.heatmap(ds2, output_dir, 'CherryBl-DS', 'Reds')
 
 # Part 1
-# ds1_step1 = Step1(ds1, name="AirBNB DS")
-# ds1_step1.run()
+ds1_step1 = Step1(ds1, name="AirBNB DS")
+ds1_step1.run()
 # ds2_step1 = Step1(ds2, name="Cherry Blossom DS")
 # ds2_step1.run()
 
 # Part 2
-ds1_step2 = Step2(ds1, name="AirBNB DS", output=output_dir)
-ds1_step2.run()
-ds2_step2 = Step2(ds2, name="Cherry Blossom DS", output=output_dir)
-ds2_step2.run()
+# ds1_step2 = Step2(ds1, name="AirBNB DS", output=output_dir)
+# ds1_step2.run()
+# ds2_step2 = Step2(ds2, name="Cherry Blossom DS", output=output_dir)
+# ds2_step2.run()
 
 
 # Part 3
