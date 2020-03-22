@@ -70,10 +70,10 @@ def loadDataset1(output_path="output"):
     data_df = df_processed.drop(['price_bins', 'price'], axis=1)
     data = np.array(data_df)
 
-    log.info('AirBNB Dataset:')
-    log.info(list(data_df))
-    log.info('Target:')
-    log.info(list(df_processed['price_bins']))
+    # log.info('AirBNB Dataset:')
+    # log.info(list(data_df))
+    # log.info('Target:')
+    # log.info(list(df_processed['price_bins']))
 
     # 2nd Iteration with imputing missing values
     from sklearn.impute import SimpleImputer

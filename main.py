@@ -45,16 +45,18 @@ pprint(ds2)
 # an.heatmap(ds2, output_dir, 'CherryBl-DS', 'Reds')
 
 # Part 1
-ds1_step1 = Step1(ds1, name="AirBNB DS")
-ds1_step1.run()
-# ds2_step1 = Step1(ds2, name="Cherry Blossom DS")
+ds1_step1 = Step1(ds1, name="AirBNB DS", cluster_range=range(100,1000,200))
+# ds1_step1.run()
+ds2_step1 = Step1(ds2, name="Cherry-Blossom-DS")
 # ds2_step1.run()
 
 # Part 2
 # ds1_step2 = Step2(ds1, name="AirBNB DS", output=output_dir)
 # ds1_step2.run()
-# ds2_step2 = Step2(ds2, name="Cherry Blossom DS", output=output_dir)
-# ds2_step2.run()
+ds2_step2 = Step2(ds2, name="Cherry Blossom DS", output=output_dir)
+ds2_step2.run()
+
+
 
 
 # Part 3
