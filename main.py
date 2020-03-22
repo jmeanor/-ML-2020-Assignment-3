@@ -51,10 +51,10 @@ ds2_step1 = Step1(ds2, name="Cherry-Blossom-DS")
 # ds2_step1.run()
 
 # Part 2
-# ds1_step2 = Step2(ds1, name="AirBNB DS", output=output_dir)
-# ds1_step2.run()
-ds2_step2 = Step2(ds2, name="Cherry Blossom DS", output=output_dir)
-ds2_step2.run()
+ds1_step2 = Step2(ds1, name="AirBNB DS", output=output_dir)
+ds1_step2.run()
+# ds2_step2 = Step2(ds2, name="Cherry Blossom DS", output=output_dir)
+# ds2_step2.run()
 
 
 

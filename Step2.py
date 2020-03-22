@@ -35,6 +35,7 @@ class Step2():
         kurts = []
 
         fig, (ax1, ax2) = plt.subplots(1, 2)
+        fig.set_size_inches(8, 4)
         fig.suptitle('Dimensionality Reduction')
         ax1.set(title='Avg Reconstruction MSE', xlabel='k', ylabel='Error')
         ax1.grid(True)
@@ -43,29 +44,35 @@ class Step2():
         ax2.grid(True)
         # ax1.set_xlim()
         
-
         for alg in algs:
             err, kurt = self.dim_reduc(Algorithm=alg)
-            # err = {alg.__name__: err}
-            # kurt = {alg.__name__: kurt}
             errs.append(err)
             kurts.append(kurt)
             ax1.plot(self.range, err.loc[:,'loss'], label=alg.__name__)
             ax2.plot(self.range, kurt.loc[:,'kurtosis'], label=alg.__name__)
-        # plt.clf()
-        # errs = pd.DataFrame(errs)
-        # kurts = pd.DataFrame(kurts)
-        # plt.plot(errs, label="Avg Reconstruction Error")
-        # plt.plot(kurts, label="Avg Kurtosis")
+            log.info('Max Kurtosis Index: %i, Kurtosis: %f' %(kurt.loc[:,'kurtosis'].idxmax(), kurt.loc[:,'kurtosis'].max()))
+            log.info('Min Reconstruction Error Index: %i, Kurtosis: %f' %(err.loc[:,'loss'].idxmin(), err.loc[:,'loss'].min()))
         plt.grid(True)
         ax1.legend(loc="best")
         ax2.legend(loc="best")
-        plt.show()
         plt.savefig(os.path.join(self.output, self.name + '.png'))
-        # self.dim_reduc(Algorithm=PCA)
-        # self.dim_reduc(Algorithm=FastICA)
-        # self.dim_reduc(Algorithm=GaussianRandomProjection)
+        plt.show()
+
+        # log.info('Min Reconstruction Error: %f' %err)
         
+        # pprint('errs')
+        # errs = pd.DataFrame(errs)
+        # kurts = pd.DataFrame(kurts)
+
+        # dim_reduc = pd.concat([errs, kurts], axis=1)
+        # pprint(dim_reduc)
+        # for alg in algs:
+        #     dim_reduc[alg +'_kurtosis']     = errs.loc[alg, :]
+        #     dim_reduc[alg +'_recon-error']  = kurt.loc[alg, :]
+        # out = pd.DataFrame(index=self.range, columns=[algs] )
+        
+        # pd.DataFrame(dim_reduc).to_csv(os.path.join(self.output, self.name+"-dim-reduc.csv"))
+
     
     # Source: https://scikit-learn.org/stable/auto_examples/decomposition/plot_pca_iris.html
     def PCA(self):
@@ -285,7 +292,7 @@ class Step2():
         # plt.savefig(os.path.join(self.output, "%s-%s-kurtosis.png" %(self.name, Algorithm.__name__)))
         # plt.show()
 
-        log.info(errors)
-        log.info('%s\tBest n_components found: %i with avg loss: %f' %(Algorithm.__name__, best_k, best_loss))
+        # log.info(errors)
+        # log.info('%s\tBest n_components found: %i with avg loss: %f' %(Algorithm.__name__, best_k, best_loss))
 
         return (errors, kurtoses)
