@@ -32,11 +32,11 @@ class Step1():
     def run(self):
         self.output = load_data.createDateFolder(suffix=["Step1"])
         # K-Means
-        self.elbow(isKM=True)
-        self.silhouette_side_by_side(isKM=True)
+        # self.elbow(isKM=True)
+        # self.silhouette_side_by_side(isKM=True)
         
         # E.M.
-        self.elbow(isKM=False)
+        # self.elbow(isKM=False)
         self.silhouette_side_by_side(isKM=False)
 
         # R&D
@@ -83,28 +83,29 @@ class Step1():
                         "with n_clusters = %d" % (clustererType, self.name, n_clusters)),
                         fontsize=14, fontweight='bold')
 
-        plt.show()
+        # plt.show()
 
     # Analysis for selecting best number of clusters. 
     # Source: https://scikit-learn.org/stable/auto_examples/cluster/plot_kmeans_silhouette_analysis.html#sphx-glr-auto-examples-cluster-plot-kmeans-silhouette-analysis-py
     def silhouette_side_by_side(self, isKM):
-        range_n_clusters = [2,6]
+        range_n_clusters = [100,500]
 
         for n_clusters in range_n_clusters:
             fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2)
             fig.set_size_inches(8, 8)
 
             self._generate_silhouette(ax1, n_clusters,   isKM)
-            self._generate_silhouette(ax2, n_clusters+1, isKM)
-            self._generate_silhouette(ax3, n_clusters+2, isKM)
-            self._generate_silhouette(ax4, n_clusters+3, isKM)
+            self._generate_silhouette(ax2, n_clusters+100, isKM)
+            self._generate_silhouette(ax3, n_clusters+200, isKM)
+            self._generate_silhouette(ax4, n_clusters+300, isKM)
             
             clustererType = 'K-Means' if isKM else 'E.M.'
             plt.suptitle(("Silhouette Analysis for %s on %s "% (clustererType, self.name)), fontweight='bold', fontsize=14)
             fig.subplots_adjust(wspace=0.5, hspace=0.5, left=0.125, right=0.9,top=0.9, bottom=0.1)
-            plt.savefig(os.path.join(self.output, self.name+'-silhouette' + str(n_clusters) + ':' + str(n_clusters+4) + '.png'))
+            clustererType = 'K-Means' if isKM else 'E.M.'
+            plt.savefig(os.path.join(self.output, self.name+'-silhouette-' + clustererType + '-'+ str(n_clusters) + ':' + str(n_clusters+300) + '.png'))
         fig.tight_layout(rect=[0, 0.03, 1, 0.95])
-        plt.show()
+        # plt.show()
 
     def _generate_silhouette(self, ax1, n_clusters, isKM=True):
         ax1.set_xlim([-0.1, 1])
@@ -154,33 +155,33 @@ class Step1():
 
 
     # TODO: Hardcoded for DS2
-    def visualize(self):
-        pca = PCA(n_components=3)
-        pca_result = pca.fit_transform(self.dataX)
+    # def visualize(self):
+    #     pca = PCA(n_components=3)
+    #     pca_result = pca.fit_transform(self.dataX)
 
-        feat_columns = ['month','day','temp_mean','temp_accum']
-        data_df = pd.DataFrame(self.dataX, columns=feat_columns)
-        data_df['y'] = self.dataY
+    #     feat_columns = ['month','day','temp_mean','temp_accum']
+    #     data_df = pd.DataFrame(self.dataX, columns=feat_columns)
+    #     data_df['y'] = self.dataY
 
-        data_df['pca-one']   = pca_result[:, 0]
-        data_df['pca-two']   = pca_result[:, 1]
-        data_df['pca-three'] = pca_result[:, 2]
-        # pprint(data_df)
+    #     data_df['pca-one']   = pca_result[:, 0]
+    #     data_df['pca-two']   = pca_result[:, 1]
+    #     data_df['pca-three'] = pca_result[:, 2]
+    #     # pprint(data_df)
 
-        print('Explained variation per principal component: {}'.format(pca.explained_variance_ratio_))
+    #     print('Explained variation per principal component: {}'.format(pca.explained_variance_ratio_))
 
-        ax = plt.figure(figsize=(8,5)).gca(projection='3d')
-        ax.scatter(
-            xs=data_df.loc[:,"pca-one"], 
-            ys=data_df.loc[:,"pca-two"], 
-            zs=data_df.loc[:,"pca-three"], 
-            c= data_df.loc[:,"y"], 
-            cmap='tab10'
-        )
-        ax.set_xlabel('pca-one')
-        ax.set_ylabel('pca-two')
-        ax.set_zlabel('pca-three')
-        plt.show()
+    #     ax = plt.figure(figsize=(8,5)).gca(projection='3d')
+    #     ax.scatter(
+    #         xs=data_df.loc[:,"pca-one"], 
+    #         ys=data_df.loc[:,"pca-two"], 
+    #         zs=data_df.loc[:,"pca-three"], 
+    #         c= data_df.loc[:,"y"], 
+    #         cmap='tab10'
+    #     )
+    #     ax.set_xlabel('pca-one')
+    #     ax.set_ylabel('pca-two')
+    #     ax.set_zlabel('pca-three')
+    #     plt.show()
 
     # Used to find optimal K
     # Source: https://heartbeat.fritz.ai/k-means-clustering-using-sklearn-and-python-4a054d67b187
@@ -192,7 +193,7 @@ class Step1():
                 km = KMeans(n_clusters = i, n_jobs=-1).fit(self.dataX)
                 Error.append(km.inertia_)
             else:
-                em = GaussianMixture(n_components=i, init_params='random').fit(self.dataX)
+                em = GaussianMixture(n_components=i, init_params='random', random_state=7).fit(self.dataX)
                 Error.append((em.bic(self.dataX), em.aic(self.dataX)))
         import matplotlib.pyplot as plt
         if isKM:
@@ -209,4 +210,4 @@ class Step1():
         plt.ylabel('Error')
         plt.grid(True)
         plt.savefig(os.path.join(self.output, self.name +'-' + clustererType + '-elbow.png'))
-        plt.show()
+        # plt.show()

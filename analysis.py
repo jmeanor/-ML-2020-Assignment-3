@@ -10,9 +10,9 @@ def heatmap(data, path, name, color):
 
     # cor = cor.loc[:,xlabels]
 
-    ax = sns.heatmap(cor,cmap=color, square = True, xticklabels=True, yticklabels=True)
-    ax.tick_params(axis="y", direction="inout")
-    ax.tick_params(axis="x",  labelrotation=90.0)
+    ax = sns.heatmap(cor, cmap=color, square = True, xticklabels=True, yticklabels=True)
+    ax.tick_params(axis="y", labelrotation=0)
+    ax.tick_params(axis="x")
 
     # ax.set_xticks(range(1, len(xlabels)))
     # ax.set_xticklabels(range(1, len(xlabels)))
